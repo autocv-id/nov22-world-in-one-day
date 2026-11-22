@@ -262,6 +262,25 @@ PINS = [
     (13, 77.2, 28.6, "DELHI", 0, 0, "r"),
 ]
 
+# Map label offsets: story num -> (dx, dy) of the label's top-left from
+# the pin centre. Only for labels whose default side placement collides
+# with a neighbouring pin in the crowded Middle East / South Asia /
+# East Asia cluster (v2 map fix — the user found ANTALYA reading as
+# "TALYA" under pin 2, DELHI's D and HONG KONG's H crowded by pins).
+# The PINS dx/dy above are PIN nudges — changing them would move the
+# pins themselves, so crowded labels get their own offset here instead.
+# Measured with /tmp/map-solve.py (nearest clear position per label,
+# 10px clearance from every pin circle, no label-label overlap):
+# - ANTALYA up-right of pin 1 (pin 2 sits on the default right slot)
+# - DELHI up-right of pin 13 (pin 7 grazes the default right slot)
+# - HONG KONG below pin 7 (the map's right edge clamps the default
+#   right slot leftwards, onto the pin itself)
+LABEL_DXDY = {
+    1: (9, -13),    # ANTALYA
+    13: (8, -14),   # DELHI
+    7: (-30, 8),    # HONG KONG
+}
+
 
 # ---------------------------------------------------------------- helpers
 def wrap(d, text, fnt, max_w):
@@ -584,12 +603,20 @@ def draw_map(d, x, y, w, h):
         if not lab:
             continue
         lw = d.textlength(lab, font=f_lab)
-        if side == "l":
+        if num in LABEL_DXDY:
+            # crowded-cluster label: explicit offset from the pin
+            # centre (see LABEL_DXDY above); the clamp below is a
+            # no-op for all three (verified in /tmp/map-solve.py)
+            lx = px + LABEL_DXDY[num][0]
+            ly = py + LABEL_DXDY[num][1]
+        elif side == "l":
             lx = px - 10 - lw
+            ly = py - 5
         else:
             lx = px + 10
+            ly = py - 5
         lx = min(max(lx, x + 2), x + w - lw - 2)
-        ly = min(max(py - 5, y + 1), y + h - 10)
+        ly = min(max(ly, y + 1), y + h - 10)
         d.text((lx, ly), lab, font=f_lab, fill=NAVY_DK)
 
 
