@@ -3,14 +3,14 @@
 
 Standard library only. Verifies the PNG signature and the 1 MiB size cap
 before writing, so a corrupt or oversized image fails loudly instead of
-reaching the gate.
+reaching the gate. Respects MAKEFUN_OUTPUT_DIR when the pod sets it.
 """
 import os
 import shutil
 import sys
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
-MAX_BYTES = 1048576
+MAX_BYTES = 1048576  # 1 MiB
 
 
 def main():
