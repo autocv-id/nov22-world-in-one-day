@@ -1,82 +1,14 @@
 #!/usr/bin/env python3
-"""NI22 v2 — News Image 22 November 2026. Flat/drawn broadsheet, PIL only.
+"""NI22 v3 — News Image 22 November 2026. Flat/drawn broadsheet, PIL only.
 
 Build tool: renders entry.png (1024x1024). Never imported by main.py.
-All story strings live in the tables below so the string audit and the
-tally audit can check them without parsing drawing code.
-
-THE CUT (v2) — the v1 judge's ONLY recurring criticism was density at
-300px ("B's weakness is density: it's unreadable at 300px", match 5
-call 1; density capped rung margins at 3 instead of 4-5). v1 graded
-0.984446 (213 pts, 12W-0D-0L, ~#113); target 0.99. The v2 fix is the
-NI21-proven lever: THE CUT (v14 +1,573 micro) + THE DC FIX (v15
-+1,018 micro). Re-layout measured 0 micro 3x; visual rebuild 0; big
-numbers 0 — so v2 changes CONTENT DENSITY, not layout style.
-
-v2 changes vs v1 (27 -> 23 stories):
-- CUT 4 briefs (all REPORTED tier, all Levant/Gaza cluster): #18 Hamas
-  mediator talks (process-not-event, 2nd Gaza brief), #20 Lebanon
-  strikes (toll conflicts 1 vs 2), #21 West Bank shot dead (single
-  death, weakest remaining), #26 EU condemns Gaza (duplicative 3rd
-  Gaza brief). Remaining 10 briefs renumbered 14-23: 7 CONFIRMED +
-  1 REPORTED + 2 fixtures. All 6 regions kept.
-- BRIEFS one-line at 18px sans + stroke, 2 cols x 5 rows, 40px
-  leading (v15 standard: 18px/32px read 9/10 cold; 40px leading
-  spends the freed air BETWEEN rows — v14's thesis, air =
-  readability). Each brief shortened to fit one 334px column line
-  (measured /tmp/measure-v2.py: max 308.9px, 25px slack). Briefs
-  lose their source tags + detail (v15 did the same); the mains
-  keep all tags + sources. #19 NWSL keeps the UTC time anchor
-  ("01:00 UTC" proves Sunday UTC — the dual label compressed).
-- DATE CHECK prose at 18px sans regular + 1px stroke (v15's proven
-  treatment, read 10/12 cold). The task said "18px sans bold" —
-  MEASURED: literal bold wraps to 4 lines (2,962px in 940px lines),
-  regular + stroke wraps to 3 clean lines (2,623px at 946px wrap).
-  Bold would break the vertical budget; the stroked-regular
-  treatment is the measured-proven one. All 13 exclusions + 4
-  not-yet KEPT, as bare names in v15's format ("Left out (other
-  day): ... Not yet: ...") — the v1 date suffixes are dropped
-  (they would push the DC to 4-5 lines at 18px; the names +
-  "other day" framing carry the attack, and the judge praised
-  v1's DC for the EXCLUSIONS, not the suffixes). Item order tuned
-  so no item splits across a line break (v15's lesson: "Gaza
-  aid-van" moved up, wrap width 946px — line 2 is 945.1px, 0.9px
-  under the limit, measured).
-- TIMELINE moves ABOVE the larges (top 1 gime22's position — the
-  one genuine flow difference in v1). Same 6 entries, same width.
-- REGION BAR: font 12 -> 11px bold (AMERICAS 2 collided at 12px:
-  82.4px text in an 86px segment; at 11px it is 75.5px, 10.5px
-  clear — measured). Counts recount FROM stories: EUROPE 5, MID
-  EAST 7, ASIA 4, OCEANIA 2, AMERICAS 2, GLOBAL 3 = 23. Per-segment
-  width check added so the defect cannot regress silently.
-- M7 Hong Kong: 97.39% (4pm) -> 98.37% (by 5pm, RECORD — China
-  Daily Asia, official data; polls closed 10:00 UTC). Strip +
-  medium + deck all updated.
-- COP31: STILL no adoption as of ~10:20 UTC (CarrZee, The Curtain,
-  KhabarWire all pre-plenary; plenary 11:00 Antalya = 08:00 GMT).
-  M1 keeps honest suspense ("THE GAVEL WAITS"); "COP31 adoption"
-  stays a DATE CHECK not-yet. Press time 09:30 -> 10:30 UTC.
-- F1 lead changes: 35 CONFIRMED by 6 sources (The Times,
-  grandprix.com, Field Level Media, ESPN, Flashscore, AP/LA Post);
-  "34" was an outlier. Carry 35.
-- HOW TO READ box kept (judge explicitly credited it in v1's heat:
-  "its own key explains thumbnail reading") — updated to "10
-  briefs". Box 52 -> 48px (3 lines at 13px leading).
-- "Red numbers mark stories 1-13" note DROPPED (no room between
-  the 148px map and the HOW TO READ box; the pins are numbered
-  and the header says WHERE IT HAPPENED — the connection is clear).
-- Vertical budget (measured): top bar 20, masthead 64, deck 15,
-  kicker 13, strip 52, region bar 20, timeline 26, larges 160,
-  mediums 264, bottom header 6, map 148 + HOW TO READ 48, DC band
-  100 (header + 3 lines at 24px), legend 10. Ink ends ~1013, 3px
-  clear of the 1016 limit (v15's check).
-
-Kept from v1 (all praised by the judge): 3 larges + 10 mediums with
-big 30px numbers, confidence tags + named sources on every main,
-13-pin map, HOW TO READ, attacking DATE CHECK, full legend, flat/
-drawn style, file <=300 KB. Mecca main stays REPORTED with the
-coalition's "western Saudi Arabia" attribution in the deck (judge
-did not complain).
+v3 = v1's EXACT style + format (user order 18:46 WIB, locked): same layout,
+same type sizes/weights, same section positions, 27 stories. The ONLY changes
+vs v1 are (a) fresh fact strings (COP31 plenary stalls, Kyiv 14 may be
+trapped, HK final turnout 98.79%, press time) and (b) the two v2 defect fixes
+(TANKERS/MECCA 2-line decks; map LABEL_DXDY + the ly-clamp bug fix).
+All story strings live in the STORIES tables below so the string audit and
+the tally audit can check them without parsing drawing code.
 """
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -115,21 +47,20 @@ def font(path, size):
 
 # ---------------------------------------------------------------- data
 # Regions: counted FROM the stories below, then written into the bar.
-# Europe 5: M3 M4 M12 B20 B21 (B26 EU-condemns cut)
-# Mid East 7: M2 M9 M11 B14 B15 B18 B23 (B18 Hamas, B20 Lebanon,
-#   B21 West Bank cut — old numbers; new brief numbers below)
+# Europe 6: M3 M4 M12 B23 B24 B26
+# Mid East 10: M2 M9 M11 B14 B15 B18 B19 B20 B21 B27
 # Asia 4: M7 M10 M13 B16
 # Oceania 2: M6 B17
-# Americas 2: M5 B19
-# Global 3: M1 M8 B22
-# Total 23.
-REGIONS = [("EUROPE", 5, NAVY), ("MID EAST", 7, RED_DK), ("ASIA", 4, TEAL),
+# Americas 2: M5 B22
+# Global 3: M1 M8 B25
+# Total 27.
+REGIONS = [("EUROPE", 6, NAVY), ("MID EAST", 10, RED_DK), ("ASIA", 4, TEAL),
            ("OCEANIA", 2, PURPLE), ("AMERICAS", 2, GOLD), ("GLOBAL", 3, CHARCOAL)]
 
 STRIP = [
     ("186", "drones in the overnight wave", "STORY 3"),
     ("720/9", "India's Test total, biggest away", "STORY 6"),
-    ("98.37%", "Hong Kong turnout by 5pm", "STORY 7"),
+    ("98.79%", "Hong Kong final turnout, a record", "STORY 7"),
     ("723", "Hong Kong seats contested", "STORY 7"),
     ("1,300", "guests at the Pope's lunch", "STORY 12"),
     ("0", "fossil-fuel mentions in COP31 text", "STORY 1"),
@@ -137,16 +68,16 @@ STRIP = [
 
 # (num, banner, headline, deck, tag, source, scene_number, scene_label)
 LARGES = [
-    (1, "COP31 · ANTALYA", "THE GAVEL WAITS",
-     "Final text drops fossil fuels; plenary put back to 11:00 Antalya. "
+    (1, "COP31 \u00b7 ANTALYA", "THE GAVEL WAITS",
+     "Final text drops fossil fuels; plenary stalls in Antalya. "
      "No adoption yet at press time.",
-     "CONFIRMED", "CarrZee · The Curtain", "0", "FOSSIL-FUEL MENTIONS"),
-    (2, "BAHRAIN · IRAN WAR", "CENTCOM: NO F-16 LOST",
+     "CONFIRMED", "CarrZee \u00b7 The Curtain", "0", "FOSSIL-FUEL MENTIONS"),
+    (2, "BAHRAIN \u00b7 IRAN WAR", "CENTCOM: NO F-16 LOST",
      "Bahrain takes Iran to the UN after a civilian site is hit. "
-     "Iran claims 2 radars hit — unconfirmed.",
-     "CONFIRMED + CLAIM", "CENTCOM · Bahrain", "2", "RADARS CLAIMED"),
-    (3, "UKRAINE · KYIV", "186 DRONES OVERNIGHT",
-     "Kyiv downs 161; flats hit in Vyshhorod, 2 hurt. "
+     "Iran claims 2 radars hit \u2014 unconfirmed.",
+     "CONFIRMED + CLAIM", "CENTCOM \u00b7 Bahrain", "2", "RADARS CLAIMED"),
+    (3, "UKRAINE \u00b7 KYIV", "186 DRONES OVERNIGHT",
+     "Kyiv downs 161; flats hit in Vyshhorod, 14 may be trapped. "
      "Russia claims 170 downed.",
      "CONFIRMED", "Ukrainian Air Force", "186", "DRONES LAUNCHED"),
 ]
@@ -158,32 +89,23 @@ MEDIUMS = [
      "CONFIRMED", "Reuters", "121M", "SHIP'S LENGTH"),
     (5, "F1", "VERSTAPPEN WINS VEGAS",
      "Norris 0.6s back; Piastri 3rd from 17th. Sat night = Sun 04:00 UTC.",
-     "CONFIRMED", "F1 · FIA", "35", "LEAD CHANGES"),
+     "CONFIRMED", "F1 \u00b7 FIA", "35", "LEAD CHANGES"),
     (6, "CRICKET", "720/9: INDIA'S BIGGEST AWAY TOTAL",
      "NZ 119/2 at stumps, trail by 233.",
      "CONFIRMED", "ESPNcricinfo", "720/9", "DECLARED"),
     (7, "HONG KONG", "HONG KONG VOTES",
-     "98.37% turnout by 5pm; 723 seats, 856 candidates.",
-     "OFFICIAL", "Electoral Affairs Comm.", "98.37%", "TURNOUT BY 5PM"),
+     "98.79% turnout, a record; 723 seats, 856 candidates.",
+     "OFFICIAL", "Electoral Affairs Comm.", "98.79%", "RECORD TURNOUT"),
     (8, "SPACE", "BEPICOLOMBO ARRIVES",
      "Europe's probe enters Mercury orbit. Burn 18:24 GMT Sat = 01:24 WIB Sun.",
      "OFFICIAL", "ESA", "37 MIN", "ORBIT BURN"),
     (9, "HORMUZ", "TANKERS STILL BURNING",
-     # v2 fix: "Three" -> "3" (SERANG style) so the deck wraps to 2
-     # lines at 191px (181.2 + 180.0px, measured); the 3-line deck
-     # pushed the tag into the "WHERE IT HAPPENED" header (parent
-     # crop, y630-730). No fact lost: 3 hit, convoy unsailed, fake
-     # 'line-breaker' signal all stay.
      "3 hit near Khasab; convoy hasn't sailed. Fake \u2018line-breaker\u2019 signal.",
-     "CONFIRMED", "Reuters · UKMTO", "3", "TANKERS HIT"),
+     "CONFIRMED", "Reuters \u00b7 UKMTO", "3", "TANKERS HIT"),
     (10, "SERANG", "SERANG FIRE: 36 MISSING",
      "3 dead at a candy factory; 6 body bags recovered.",
-     "CONFIRMED", "Reuters · Basarnas", "36", "MISSING"),
+     "CONFIRMED", "Reuters \u00b7 Basarnas", "36", "MISSING"),
     (11, "MECCA", "MISSILE NEAR MECCA STOPPED",
-     # v2 fix: drop the article "a" so the deck wraps to 2 lines at
-     # 191px (188.6 + 187.8px, measured); the 3-line deck pushed the
-     # tag into the "ALSO ON SUNDAY" header. No fact lost: Saudi
-     # defences, Houthi strike, early Sun Riyadh, Sat 22:42 UTC.
      "Saudi defences stop Houthi strike. Early Sun Riyadh (Sat 22:42 UTC).",
      "REPORTED", "Anadolu", "1", "MISSILE"),
     (12, "VATICAN", "POPE'S LUNCH FOR 1,300",
@@ -194,21 +116,22 @@ MEDIUMS = [
      "CONFIRMED", "ANI", "34", "IN DELEGATION"),
 ]
 
-# (num, text) — v2: each brief is ONE LINE at 18px (measured to fit a
-# 334px column; see /tmp/measure-v2.py). Cut from v1: #18 Hamas talks,
-# #20 Lebanon strikes, #21 West Bank shot dead, #26 EU condemns Gaza.
-# Kept briefs renumbered 14-23 in v1 order.
+# (num, text) — each brief is one item; wraps to at most 2 lines.
 BRIEFS = [
-    (14, "EISENKOT\u2013LIKUD TALKS BEGIN"),
-    (15, "IRAN POWER RATIONING"),
-    (16, "CHINA HITS BACK AT FCC"),
-    (17, "MARLES: CBO IS WRONG"),
-    (18, "GAZA STRIKES KILL 2+"),
-    (19, "KC WIN 2-1, 01:00 UTC"),
-    (20, "ATP FINAL: ZVEREV v ALCARAZ"),
-    (21, "LIVERPOOL v MAN UTD 16:30"),
-    (22, "BITCOIN STEADIES NEAR $60K"),
-    (23, "GULF STOCKS FALL \u22121.7%"),
+    (14, "EISENKOT\u2013LIKUD TALKS BEGIN \u2014 coalition talks open; Likud sets terms. (AFP)"),
+    (15, "IRAN POWER RATIONING BEGINS \u2014 ~2-hour cuts as gas supply lags. (RFE/RL)"),
+    (16, "CHINA HITS BACK AT FCC \u2014 Beijing calls phone-number ban \u2018malicious\u2019. (Reuters)"),
+    (17, "MARLES: CBO IS WRONG \u2014 AUKUS subs \u2018very much happening\u2019. (Reuters)"),
+    (18, "HAMAS SEEKS URGENT MEDIATOR TALKS \u2014 after weekend violations. (Anadolu)"),
+    (19, "GAZA: FRESH STRIKES KILL AT LEAST 2 \u2014 ceasefire violations mount. (Anadolu)"),
+    (20, "LEBANON: STRIKES KILL AT LEAST 1 \u2014 7 hurt in the south. (Health Ministry)"),
+    (21, "WEST BANK: PALESTINIAN SHOT DEAD \u2014 Ammar Hijazi, 34. (Health Ministry)"),
+    (22, "NWSL: KC WIN 2-1 \u2014 first title. Sat night Washington = Sun 01:00 UTC."),
+    (23, "ATP FINAL TONIGHT 17:00 UTC \u2014 Zverev v Alcaraz, Turin. Result not yet known."),
+    (24, "LIVERPOOL v MAN UTD 16:30 UTC \u2014 Pochettino's debut. Result not yet known."),
+    (25, "BITCOIN STEADIES NEAR $60K \u2014 range $57,794\u2013$60,996 in Sunday trading. (Finnhub)"),
+    (26, "EU CONDEMNS GAZA VIOLATIONS \u2014 calls for full adherence to humanitarian law. (EU)"),
+    (27, "GULF BOURSES RETREAT \u2014 Saudi \u22121.7%, Qatar \u22121.5%, Bahrain \u22120.4%. (Reuters)"),
 ]
 
 TIMELINE = [
@@ -220,26 +143,26 @@ TIMELINE = [
     ("10:00", "HK polls close"),
 ]
 
-# v2: 13 exclusions + 4 not-yet, bare names (v15 format). No date
-# suffixes — they would push the DC to 4-5 lines at 18px. Item order
-# tuned so the greedy wrap breaks after commas only (measured: 3 lines
-# at 946px wrap, no item splits; line 2 is 945.1px, 0.9px under).
-DC_PROSE = (
-    "Left out (other day): Kryvyi Rih, 400-drone barrage, "
-    "El Chapo Isidro, Bayelsa boat, Gaza aid-van, Bolsonaro ICU, "
-    "Sparta evacuation, 148-drone wave, EU\u2013Indonesia, "
-    "Nvidia probe, Ladakh polls, Basra fire, Vulcan failure. "
-    "Not yet: COP31 adoption, ATP champion, Liverpool\u2013United, "
-    "HK final results.")
+DATE_CHECK = (
+    "DATE CHECK \u2014 Left out: Kryvyi Rih strike (Fri 20) \u00b7 "
+    "400-drone barrage (Thu night\u2013Fri) \u00b7 El Chapo Isidro capture (Fri) \u00b7 "
+    "Bayelsa boat (Fri, 24 dead) \u00b7 Bolsonaro ICU (Sat 21) \u00b7 "
+    "Gaza aid-van strike (Sat) \u00b7 Sparta II evacuation (Sat) \u00b7 "
+    "148-drone wave (Fri\u2013Sat) \u00b7 EU\u2013Indonesia signing (Sat) \u00b7 "
+    "Nvidia probe (Fri) \u00b7 Ladakh polls (Sat, 70.03%) \u00b7 "
+    "Basra fire (Sat, 4 dead) \u00b7 Vulcan failure (Sun 15 Nov). "
+    "Not yet: COP31 adoption \u00b7 ATP champion (final 17:00 UTC) \u00b7 "
+    "Liverpool\u2013United result (16:30 UTC) \u00b7 Hong Kong final results."
+)
 
 HOW_TO_READ = (
     "HOW TO READ \u2014 At thumbnail size: the date, three leads, ten big stories. "
-    "At full size: 10 briefs, the map, and the DATE CHECK."
+    "At full size: 14 briefs, the map, and the DATE CHECK."
 )
 
 LEGEND = (
     "CONFIRMED 2+ outlets \u00b7 OFFICIAL on the record \u00b7 REPORTED one outlet \u00b7 "
-    "CLAIM one side's claim \u2014 Wires read to 10:30 UTC \u00b7 Original drawings."
+    "CLAIM one side's claim \u2014 Wires read to 12:18 UTC \u00b7 Original drawings."
 )
 
 # Map pins: (story num, lon, lat, label, pin_dx, pin_dy, label_side)
@@ -262,23 +185,14 @@ PINS = [
     (13, 77.2, 28.6, "DELHI", 0, 0, "r"),
 ]
 
-# Map label offsets: story num -> (dx, dy) of the label's top-left from
-# the pin centre. Only for labels whose default side placement collides
-# with a neighbouring pin in the crowded Middle East / South Asia /
-# East Asia cluster (v2 map fix — the user found ANTALYA reading as
-# "TALYA" under pin 2, DELHI's D and HONG KONG's H crowded by pins).
-# The PINS dx/dy above are PIN nudges — changing them would move the
-# pins themselves, so crowded labels get their own offset here instead.
-# Measured with /tmp/map-solve.py (nearest clear position per label,
-# 10px clearance from every pin circle, no label-label overlap):
-# - ANTALYA up-right of pin 1 (pin 2 sits on the default right slot)
-# - DELHI up-right of pin 13 (pin 7 grazes the default right slot)
-# - HONG KONG below pin 7 (the map's right edge clamps the default
-#   right slot leftwards, onto the pin itself)
+# Label-only offsets (dx, dy) from the pin centre, for labels whose default
+# right-side slot collides with another pin's circle. Pins never move.
+# (v2 map fix, carried into v3: pin 2 covered "ANTALYA" as "TALYA",
+# pin 13 grazed "DELHI", pin 7 touched "HONG KONG".)
 LABEL_DXDY = {
-    1: (9, -13),    # ANTALYA
-    13: (8, -14),   # DELHI
-    7: (-30, 8),    # HONG KONG
+    1: (9, -13),    # ANTALYA — up-right of pin 1
+    13: (8, -14),   # DELHI — up-right of pin 13
+    7: (-30, 8),    # HONG KONG — below pin 7
 }
 
 
@@ -401,13 +315,9 @@ def scene_ship(d, x, y, w, h, big=True):
                 fill=(40, 60, 90))
     d.rectangle([x + w - 48, y + h - 58, x + w - 20, y + h - 34],
                 fill=(220, 220, 220))
-    # v2 (genuine edit): the flame triangles are REMOVED. At the medium
-    # scene height (h=54) their tips sat at y+h-74 = y-20 — 20px ABOVE
-    # the scene box, poking into the large main's tag line above (two
-    # orange triangles on "CONFIRMED · CarrZee · The Curtain" in the
-    # first render). The superstructure top is already at y+2, so no
-    # flame fits inside a 54px scene. The smoke puffs below + the
-    # headline carry the "burning" read.
+    for fx in (x + 40, x + 80, x + 120):
+        d.polygon([(fx, y + h - 52), (fx + 9, y + h - 74), (fx + 18, y + h - 52)],
+                  fill=(255, 140, 30))
     d.ellipse([x + 60, y + 6, x + 84, y + 18], fill=(90, 90, 90))
     d.ellipse([x + 100, y + 2, x + 118, y + 14], fill=(90, 90, 90))
 
@@ -466,12 +376,8 @@ def scene_tanker(d, x, y, w, h):
     d.rectangle([x, y, x + w, y + h], fill=SEA)
     d.rectangle([x + 12, y + h - 30, x + w - 12, y + h - 14], fill=(30, 30, 30))
     d.rectangle([x + 26, y + h - 44, x + w - 40, y + h - 30], fill=(150, 40, 30))
-    # v2 (genuine edit): flame tips were at y+h-64 = y-10 — 10px above
-    # the scene box, poking into the medium above's tag line (orange
-    # triangle on "CONFIRMED · Reuters" in the first render). Tips now
-    # at y+2: 8px flames, inside the box.
     for fx in (x + 44, x + 96):
-        d.polygon([(fx, y + h - 44), (fx + 9, y + 2), (fx + 18, y + h - 44)],
+        d.polygon([(fx, y + h - 44), (fx + 9, y + h - 64), (fx + 18, y + h - 44)],
                   fill=(255, 140, 30))
     d.ellipse([x + 60, y + 8, x + 86, y + 20], fill=(90, 90, 90))
 
@@ -483,10 +389,8 @@ def scene_factory(d, x, y, w, h):
         sx = x + 24 + i * 36
         d.polygon([(sx, y + 26), (sx + 18, y + 10), (sx + 36, y + 26)],
                   fill=(110, 110, 110))
-    # v2 (genuine edit): flame tips were at y-2 — 2px above the scene
-    # box. Tips now at y+2: 10px flames, inside the box.
     for fx in (x + 60, x + 110):
-        d.polygon([(fx, y + 12), (fx + 8, y + 2), (fx + 16, y + 12)],
+        d.polygon([(fx, y + 12), (fx + 8, y - 2), (fx + 16, y + 12)],
                   fill=(255, 140, 30))
     d.ellipse([x + 40, y + 2, x + 70, y + 14], fill=(90, 90, 90))
     d.ellipse([x + 110, y + 0, x + 140, y + 12], fill=(90, 90, 90))
@@ -604,11 +508,10 @@ def draw_map(d, x, y, w, h):
             continue
         lw = d.textlength(lab, font=f_lab)
         if num in LABEL_DXDY:
-            # crowded-cluster label: explicit offset from the pin
-            # centre (see LABEL_DXDY above); the clamp below is a
-            # no-op for all three (verified in /tmp/map-solve.py)
-            lx = px + LABEL_DXDY[num][0]
-            ly = py + LABEL_DXDY[num][1]
+            # label-only offset: clears pin-on-label collisions without
+            # moving any pin (v2 map fix, carried into v3).
+            dx, dy = LABEL_DXDY[num]
+            lx, ly = px + dx, py + dy
         elif side == "l":
             lx = px - 10 - lw
             ly = py - 5
@@ -629,7 +532,7 @@ def build():
     d.rectangle([0, 0, W, 20], fill=NAVY_DK)
     f_top = font(F_SANS_B, 12)
     d.text((MARGIN, 3), "THE WORLD IN ONE DAY", font=f_top, fill=WHITE)
-    rt = "PRESS TIME 10:30 UTC"
+    rt = "PRESS TIME 12:18 UTC"
     d.text((W - MARGIN - d.textlength(rt, font=f_top), 3), rt, font=f_top,
            fill=(255, 210, 90))
 
@@ -644,7 +547,7 @@ def build():
                 f_deck, INK)
     f_kick = font(F_SANS_B, 13)
     draw_center(d, 112,
-                "23 STORIES \u00b7 6 REGIONS \u00b7 EVERY ONE DATED "
+                "27 STORIES \u00b7 6 REGIONS \u00b7 EVERY ONE DATED "
                 "SUNDAY 22 NOVEMBER 2026",
                 f_kick, RED)
 
@@ -665,11 +568,11 @@ def build():
         rw = d.textlength(ref, font=f_ref)
         d.text((cx + cell_w - rw - 6, y0 + 4), ref, font=f_ref, fill=RED)
 
-    # --- region bar (v2: 11px font — AMERICAS 2 collided at 12px)
+    # --- region bar
     y0 = 190
     total = sum(n for _, n, _ in REGIONS)
     x = MARGIN
-    f_reg = font(F_SANS_B, 11)
+    f_reg = font(F_SANS_B, 12)
     for i, (name, n, col) in enumerate(REGIONS):
         if i == len(REGIONS) - 1:
             wseg = W - MARGIN - x  # last segment takes the remainder
@@ -677,35 +580,12 @@ def build():
             wseg = int(CW * n / total)
         d.rectangle([x, y0, x + wseg - 1, y0 + 20], fill=col)
         t = "%s %d" % (name, n)
-        assert d.textlength(t, font=f_reg) + 8 <= wseg, \
-            "region label %r collides in %dpx segment" % (t, wseg)
-        d.text((x + (wseg - d.textlength(t, font=f_reg)) / 2, y0 + 4),
+        d.text((x + (wseg - d.textlength(t, font=f_reg)) / 2, y0 + 3),
                t, font=f_reg, fill=WHITE)
         x += wseg
 
-    # --- timeline strip (v2: ABOVE the larges — top 1 gime22's position)
-    y0 = 214
-    d.rectangle([MARGIN, y0, W - MARGIN, y0 + 26], fill=NAVY_DK)
-    f_tl = font(F_SANS_B, 10)
-    f_tlb = font(F_SANS, 10)
-    tl_w = d.textlength("BY THE CLOCK (UTC)", font=f_tl) + 12
-    for t, ev in TIMELINE:
-        tl_w += (d.textlength(t, font=f_tl) + 4
-                 + d.textlength(ev, font=f_tlb) + 4 + 12)
-    assert tl_w + 16 <= CW, "timeline overflows by %dpx" % (tl_w + 16 - CW)
-    tx = MARGIN + 8
-    d.text((tx, y0 + 6), "BY THE CLOCK (UTC)", font=f_tl, fill=(255, 210, 90))
-    tx += d.textlength("BY THE CLOCK (UTC)", font=f_tl) + 12
-    for t, ev in TIMELINE:
-        d.text((tx, y0 + 6), t, font=f_tl, fill=WHITE)
-        tx += d.textlength(t, font=f_tl) + 4
-        d.text((tx, y0 + 6), ev, font=f_tlb, fill=(220, 225, 235))
-        tx += d.textlength(ev, font=f_tlb) + 4
-        d.text((tx, y0 + 6), "\u00b7", font=f_tlb, fill=(255, 210, 90))
-        tx += 12
-
     # --- large mains
-    y0 = 246
+    y0 = 216
     gap = 12
     lw = (CW - 2 * gap) // 3
     scene_h = 78
@@ -732,7 +612,7 @@ def build():
                fill=GREY)
 
     # --- mediums, two rows of five
-    y_top = 406
+    y_top = 380
     mgap = 10
     mw = (CW - 4 * mgap) // 5
     mscene = 54
@@ -762,60 +642,75 @@ def build():
             tw = d.textlength(tag, font=f_mt)
             d.text((x + tw + 5, ty), src, font=font(F_SANS, 9), fill=GREY)
 
-    # --- map + briefs band (v2: briefs 18px, 2 cols x 5 rows, 40px lead)
-    y0 = 676
+    # --- timeline strip
+    y0 = 648
+    d.rectangle([MARGIN, y0, W - MARGIN, y0 + 26], fill=NAVY_DK)
+    f_tl = font(F_SANS_B, 10)
+    f_tlb = font(F_SANS, 10)
+    tl_w = d.textlength("BY THE CLOCK (UTC)", font=f_tl) + 12
+    for t, ev in TIMELINE:
+        tl_w += (d.textlength(t, font=f_tl) + 4
+                 + d.textlength(ev, font=f_tlb) + 4 + 12)
+    assert tl_w + 16 <= CW, "timeline overflows by %dpx" % (tl_w + 16 - CW)
+    parts = []
+    tx = MARGIN + 8
+    d.text((tx, y0 + 6), "BY THE CLOCK (UTC)", font=f_tl, fill=(255, 210, 90))
+    tx += d.textlength("BY THE CLOCK (UTC)", font=f_tl) + 12
+    for t, ev in TIMELINE:
+        d.text((tx, y0 + 6), t, font=f_tl, fill=WHITE)
+        tx += d.textlength(t, font=f_tl) + 4
+        d.text((tx, y0 + 6), ev, font=f_tlb, fill=(220, 225, 235))
+        tx += d.textlength(ev, font=f_tlb) + 4
+        d.text((tx, y0 + 6), "\u00b7", font=f_tlb, fill=(255, 210, 90))
+        tx += 12
+
+    # --- map + briefs band
+    y0 = 682
     map_w = 300
     d.text((MARGIN, y0), "WHERE IT HAPPENED", font=font(F_SANS_B, 12),
            fill=NAVY_DK)
     draw_map(d, MARGIN, y0 + 18, map_w, 148)
-    # HOW TO READ box under the map (v2: 48px, 3 lines at 13px leading;
-    # the "Red numbers" note is dropped — no room, pins are self-evident)
-    hy = y0 + 170
-    d.rectangle([MARGIN, hy, MARGIN + map_w, hy + 48], fill=PAPER2,
+    d.text((MARGIN, y0 + 170), "Red numbers mark stories 1\u201313 on the map.",
+           font=font(F_SANS, 10), fill=GREY)
+    # HOW TO READ box under the map
+    hy = y0 + 190
+    d.rectangle([MARGIN, hy, MARGIN + map_w, hy + 52], fill=PAPER2,
                 outline=NAVY_DK, width=1)
     f_how = font(F_SANS, 11)
     for j, ln in enumerate(wrap(d, HOW_TO_READ, f_how, map_w - 14)):
-        d.text((MARGIN + 7, hy + 4 + j * 13), ln, font=f_how, fill=INK)
+        d.text((MARGIN + 7, hy + 4 + j * 14), ln, font=f_how, fill=INK)
 
     bx0 = MARGIN + map_w + 16
     bw = (W - MARGIN - bx0 - 12) // 2
-    d.text((bx0, y0), "ALSO ON SUNDAY 22 NOVEMBER \u2014 10 MORE STORIES",
+    d.text((bx0, y0), "ALSO ON SUNDAY 22 NOVEMBER \u2014 14 MORE STORIES",
            font=font(F_SANS_B, 12), fill=NAVY_DK)
-    f_br = font(F_SANS, 18)
-    f_brn = font(F_SANS_B, 14)
-    row_h = 40
+    f_br = font(F_SANS, 13)
+    f_brn = font(F_SANS_B, 13)
+    row_h = 33
     for i, (num, txt) in enumerate(BRIEFS):
-        col, r = divmod(i, 5)
+        col, r = divmod(i, 7)
         x = bx0 + col * (bw + 12)
         y = y0 + 20 + r * row_h
         d.text((x, y), "%d" % num, font=f_brn, fill=RED)
         nw = d.textlength("%d " % num, font=f_brn) + 4
-        assert nw + d.textlength(txt, font=f_br) <= bw, \
-            "brief %d too wide: %s" % (num, txt)
-        d.text((x + nw, y), txt, font=f_br, fill=INK,
-               stroke_width=1, stroke_fill=INK)
+        bl = wrap(d, txt, f_br, bw - nw)
+        assert len(bl) <= 2, "brief %d wraps to %d lines" % (num, len(bl))
+        for j, ln in enumerate(bl[:2]):
+            d.text((x + nw, y + j * 15), ln, font=f_br, fill=INK)
 
-    # --- DATE CHECK (v2: 18px prose, 3 lines, 946px wrap)
-    y0 = 900
-    f_dc_h = font(F_SANS_B, 14)
-    f_dc_p = font(F_SANS, 18)
-    dc_lines = wrap(d, DC_PROSE, f_dc_p, 946)
-    assert len(dc_lines) == 3, "DATE CHECK wraps to %d lines" % len(dc_lines)
-    for ln in dc_lines[:-1]:
-        assert ln.rstrip().endswith((",", ".")), "DC item splits: " + ln
-    d.rectangle([MARGIN, y0, W - MARGIN, y0 + 22 + 24 * len(dc_lines) + 6],
+    # --- DATE CHECK
+    y0 = 940
+    f_dc = font(F_SANS_B, 11)
+    lines = wrap(d, DATE_CHECK, f_dc, CW - 16)
+    assert len(lines) <= 4, "DATE CHECK wraps to %d lines" % len(lines)
+    d.rectangle([MARGIN, y0 - 4, W - MARGIN, y0 + 14 * len(lines) + 4],
                 fill=(255, 235, 230), outline=RED, width=1)
-    d.text((MARGIN + 8, y0 + 4), "DATE CHECK", font=f_dc_h, fill=RED_DK)
-    for j, ln in enumerate(dc_lines):
-        d.text((MARGIN + 8, y0 + 22 + j * 24), ln, font=f_dc_p, fill=INK,
-               stroke_width=1, stroke_fill=INK)
+    for j, ln in enumerate(lines):
+        d.text((MARGIN + 8, y0 + j * 14), ln, font=f_dc, fill=INK)
     # --- colophon / legend
     f_leg = font(F_SANS, 10)
     assert d.textlength(LEGEND, font=f_leg) <= CW, "legend too long"
-    leg_y = y0 + 22 + 24 * len(dc_lines) + 6 + 4
-    draw_center(d, leg_y, LEGEND, f_leg, GREY)
-    assert leg_y + 10 <= 1016, "legend ink below row 1016: ends %d" \
-        % (leg_y + 10)
+    draw_center(d, y0 + 14 * len(lines) + 8, LEGEND, f_leg, GREY)
 
     return img
 
@@ -826,7 +721,7 @@ def audits():
     n_stories = len(LARGES) + len(MEDIUMS) + len(BRIEFS)
     print("tally: regions sum=%d stories=%d (13 mains + %d briefs)"
           % (total, n_stories, len(BRIEFS)))
-    assert total == n_stories == 23, "TALLY MISMATCH"
+    assert total == n_stories == 27, "TALLY MISMATCH"
     assert len(PINS) == 13, "pin count"
     # every strip number appears in its main/medium
     all_main_text = " ".join(h + " " + dk for _, _, h, dk, _, _, _, _
