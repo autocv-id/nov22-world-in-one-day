@@ -1,35 +1,32 @@
 #!/usr/bin/env python3
-"""NI22 v7 entrypoint: copy entry.png to the output directory.
+"""NI22 v11 entrypoint — stdlib-only copier.
 
-Standard library only. Never imports draw.py. Validates the PNG signature
-and the 1 MiB size cap, then copies the bytes unchanged.
+Copies entry.png to /output/entry.png (or $MAKEFUN_OUTPUT_DIR), verifying
+the PNG signature and the 1 MiB size cap. Never imports draw.py (the
+build tool). Deterministic: byte-identical output on every run.
 """
+import hashlib
 import os
-import shutil
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "entry.png")
-PNG_SIG = b"\x89PNG\r\n\x1a\n"
+PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 MAX_BYTES = 1048576
 
 
 def main():
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    with open(SRC, "rb") as f:
+    here = os.path.dirname(os.path.abspath(__file__))
+    src = os.path.join(here, "entry.png")
+    outdir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    os.makedirs(outdir, exist_ok=True)
+    dst = os.path.join(outdir, "entry.png")
+    with open(src, "rb") as f:
         data = f.read()
-    if data[:8] != PNG_SIG:
-        print("entry.png is not a PNG", file=sys.stderr)
-        return 1
-    if len(data) > MAX_BYTES:
-        print("entry.png exceeds 1 MiB", file=sys.stderr)
-        return 1
-    dst = os.path.join(out_dir, "entry.png")
+    assert data[:8] == PNG_MAGIC, "entry.png is not a PNG"
+    assert len(data) <= MAX_BYTES, "entry.png over 1 MiB: %d bytes" % len(data)
     with open(dst, "wb") as f:
         f.write(data)
-    print("copied %d bytes to %s" % (len(data), dst))
-    return 0
+    print("entry.png: %d bytes, sha256 %s"
+          % (len(data), hashlib.sha256(data).hexdigest()))
 
 
 if __name__ == "__main__":
